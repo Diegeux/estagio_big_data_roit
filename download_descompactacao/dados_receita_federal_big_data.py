@@ -159,12 +159,11 @@ for e in range(0, len(arquivos_empresa)):
     empresa['capital_social'] = empresa['capital_social'].astype(float)
 
     #Substituição de valores conforme o layout
+    empresa['porte_empresa'] = empresa['porte_empresa'].apply(lambda x: x.replace('01','NAO INFORMADO'))
     empresa['porte_empresa'] = empresa['porte_empresa'].apply(lambda x: x.replace('02','MICRO EMPRESA'))
     empresa['porte_empresa'] = empresa['porte_empresa'].apply(lambda x: x.replace('03','EMPRESA DE PEQUENO PORTE'))
     empresa['porte_empresa'] = empresa['porte_empresa'].apply(lambda x: x.replace('05','DEMAIS'))
-    
       
-
     #Gravação de tabela transformada no dados no banco:
     empresa.to_sql(name='empresa', con=engine, if_exists='append', index=False)
     print('Arquivo ' + arquivos_empresa[e] + ' inserido com sucesso no banco de dados!')
