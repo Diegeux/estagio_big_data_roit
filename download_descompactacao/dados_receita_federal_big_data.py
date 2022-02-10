@@ -39,8 +39,8 @@ for m in re.finditer(text, html_str):
     print(html_str[i_start+i_loc:i_end])
     Files.append(html_str[i_start+i_loc:i_end])
 
-del(Files[0:7])
-del(Files[3::])
+#del(Files[0:9])
+del(Files[1::])
 
 print('Os seguintes arquivos serão baixados:')
 
@@ -144,12 +144,26 @@ for e in range(0, len(arquivos_empresa)):
                           header=None,
                           dtype=empresa_dtypes)
 
+    #Gravação de tabela backup no banco de dados
+    empresa.to_sql(name='empresa_backup', con=engine, if_exists='append', index=False)
+
     #Tratamento do arquivo antes de inserir na base:
     empresa = empresa.reset_index()
     del empresa['index']
 
     #Renomear colunas conforme o layout
     empresa.columns = ['cnpj_basico', 'razao_social', 'natureza_juridica', 'qualificacao_responsavel', 'capital_social', 'porte_empresa', 'ente_federativo_responsavel']
+
+    #Substituição de valores conforme o layout
+    empresa['capital_social'] = empresa['capital_social'].apply(lambda x: x.replace(',','.'))
+    empresa['capital_social'] = empresa['capital_social'].astype(float)
+
+    #Substituição de valores conforme o layout
+    empresa['porte_empresa'] = empresa['porte_empresa'].apply(lambda x: x.replace('02','MICRO EMPRESA'))
+    empresa['porte_empresa'] = empresa['porte_empresa'].apply(lambda x: x.replace('03','EMPRESA DE PEQUENO PORTE'))
+    empresa['porte_empresa'] = empresa['porte_empresa'].apply(lambda x: x.replace('05','DEMAIS'))
+    
+      
 
     #Gravação de tabela transformada no dados no banco:
     empresa.to_sql(name='empresa', con=engine, if_exists='append', index=False)
@@ -192,6 +206,11 @@ for e in range(0, len(arquivos_estabelecimento)):
                           header=None,
                           dtype='object')
     
+    #Gravação de tabela backup no banco de dados
+    estabelecimento.to_sql(name='estabelecimento_backup', con=engine, if_exists='append', index=False)
+
+    #Tratamento do arquivo antes de inserir na base:
+
     #Excluindo coluna index
     estabelecimento = estabelecimento.reset_index()
     del estabelecimento['index']
@@ -227,6 +246,18 @@ for e in range(0, len(arquivos_estabelecimento)):
                                'correio_eletronico',
                                'situacao_especial',
                                'data_situacao_especial']
+
+    #Substituição de valores conforme o layout
+    estabelecimento['identificador_matriz_filial']=estabelecimento['identificador_matriz_filial'].apply(lambda x: x.replace('1','MATRIZ'))
+    estabelecimento['identificador_matriz_filial']=estabelecimento['identificador_matriz_filial'].apply(lambda x:x.replace('2','FILIAL'))
+    
+    
+    #Substituição de valores conforme o layout
+    estabelecimento['situacao_cadastral']=estabelecimento['situacao_cadastral'].apply(lambda x:x.replace('01','NULA'))
+    estabelecimento['situacao_cadastral']=estabelecimento['situacao_cadastral'].apply(lambda x:x.replace('02','ATIVA'))
+    estabelecimento['situacao_cadastral']=estabelecimento['situacao_cadastral'].apply(lambda x:x.replace('03','SUSPENSA'))
+    estabelecimento['situacao_cadastral']=estabelecimento['situacao_cadastral'].apply(lambda x:x.replace('04','INAPTA'))
+    estabelecimento['situacao_cadastral']=estabelecimento['situacao_cadastral'].apply(lambda x:x.replace('08','BAIXADA'))
 
     #Gravação de tabela transformada no dados no banco:
     estabelecimento.to_sql(name='estabelecimento', con=engine, if_exists='append', index=False)
@@ -267,6 +298,9 @@ for e in range(0, len(arquivos_socios)):
                           header=None,
                           dtype='object')
 
+    #Gravação de tabela backup no banco de dados
+    socios.to_sql(name='socios_backup', con=engine, if_exists='append', index=False)
+
     #Tratamento do arquivo antes de inserir na base:
 
     #Excluindo coluna index
@@ -286,6 +320,11 @@ for e in range(0, len(arquivos_socios)):
                       'qualificacao_representante_legal',
                       'faixa_etaria']
 
+    #Substituição de valores conforme o layout
+    socios['identificador_socio']=socios['identificador_socio'].apply(lambda x:x.replace('1','PESSOA JURIDICA'))
+    socios['identificador_socio']=socios['identificador_socio'].apply(lambda x:x.replace('2','PESSOA FISICA'))
+    socios['identificador_socio']=socios['identificador_socio'].apply(lambda x:x.replace('3','ESTRANGEIRO'))
+
     #Gravação de tabela transformada no dados no banco:
     socios.to_sql(name='socios', con=engine, if_exists='append', index=False)
     print('Arquivo ' + arquivos_socios[e] + ' inserido com sucesso no banco de dados!')
@@ -298,7 +337,5 @@ print('Arquivos de socios finalizados!')
 socios_insert_end = time.time()
 socios_Tempo_insert = round((socios_insert_end - socios_insert_start))
 print('Tempo de execução do processo de sócios (em segundos): ' + str(socios_Tempo_insert))
-
-
 
 
