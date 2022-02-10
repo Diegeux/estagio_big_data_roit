@@ -39,8 +39,8 @@ for m in re.finditer(text, html_str):
     print(html_str[i_start+i_loc:i_end])
     Files.append(html_str[i_start+i_loc:i_end])
 
-#del(Files[0:9])
-del(Files[1::])
+del(Files[0:7])
+del(Files[3::])
 
 print('Os seguintes arquivos serão baixados:')
 
